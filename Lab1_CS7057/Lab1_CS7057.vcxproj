@@ -30,6 +30,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SingleMeshLoader.h" />
+    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Skinned.h" />
     <ClInclude Include="teapot.h" />
     <ClInclude Include="Utilities.h" />

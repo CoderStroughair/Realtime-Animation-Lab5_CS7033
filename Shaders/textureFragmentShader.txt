@@ -6,6 +6,7 @@ in vec3 light_position_eye;
 in vec3 camPos;
 in vec2 texture_coordinates;
 
+in vec4 colour;
 
 uniform sampler2D texture_primary;
 uniform sampler2D basic_texture2;
@@ -48,4 +49,5 @@ void main()
 	vec3 color = Is + Id + Ia;
     frag_color = vec4(color, 1.0);
 	frag_color = texture(texture_primary, texture_coordinates);
+	//frag_color = colour;
 }

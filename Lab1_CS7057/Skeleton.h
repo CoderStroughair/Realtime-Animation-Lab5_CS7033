@@ -1,26 +1,28 @@
 #pragma once
+#include "SingleMeshLoader.h"
+#include "EulerCamera.h"
 #include "Utilities.h"
 
 #pragma region BONE
-class Bone {
+class SingleBone {
 public:
-	Mesh mesh;
+	SingleMesh singleMesh;
 	versor orientation;
 	mat4 rotMatrix;
 	mat4 localTransform;
-	Bone* parent;
-	vector<Bone*> children;
+	SingleBone* parent;
+	vector<SingleBone*> children;
 	bool root = false;
-	Bone();
-	Bone(Mesh m, Bone* parent, mat4 initPosition);
-	Bone(Mesh m, Bone* parent, mat4 initPosition, bool root);
-	~Bone();
-	void addChild(Bone* child);
+	SingleBone();
+	SingleBone(SingleMesh m, SingleBone* parent, mat4 initPosition);
+	SingleBone(SingleMesh m, SingleBone* parent, mat4 initPosition, bool root);
+	~SingleBone();
+	void addChild(SingleBone* child);
 	void drawBone(mat4 projection, mat4 view, mat4 modelGlobal, GLuint shaderID, EulerCamera cam);
 	void bendBone(GLfloat rotation);
 	void rollBone(GLfloat rotation);
 	void pivotBone(GLfloat rotation);
-	void updateJoint(vec3 point, Bone* endEffector);
+	void updateJoint(vec3 point, SingleBone* endEffector);
 	mat4 getTransformMatrix();
 	vec3 getPosition();
 	bool initialised = false;
@@ -30,15 +32,15 @@ public:
 
 #pragma region CONSTRUCTORS
 
-Bone::Bone()
+SingleBone::SingleBone()
 {
 	initialised = false;
 }
 
-Bone::Bone(Mesh m, Bone* parent, mat4 initPosition)
+SingleBone::SingleBone(SingleMesh m, SingleBone* parent, mat4 initPosition)
 {
 	initialised = true;
-	mesh = m;
+	singleMesh = m;
 	localTransform = initPosition;
 	this->parent = parent;
 	if (parent)
@@ -50,12 +52,12 @@ Bone::Bone(Mesh m, Bone* parent, mat4 initPosition)
 	rotMatrix = identity_mat4();
 }
 
-Bone::Bone(Mesh m, Bone* parent, mat4 initPosition, bool root)
+SingleBone::SingleBone(SingleMesh m, SingleBone* parent, mat4 initPosition, bool root)
 {
 	if (root)
 		this->root = true;
 	initialised = true;
-	mesh = m;
+	singleMesh = m;
 	localTransform = initPosition;
 	if (parent)
 	{
@@ -69,7 +71,7 @@ Bone::Bone(Mesh m, Bone* parent, mat4 initPosition, bool root)
 	rotMatrix = identity_mat4();
 }
 
-Bone::~Bone()
+SingleBone::~SingleBone()
 {
 	for (int i = 0; i < children.size(); i++)
 		delete children[i];
@@ -77,12 +79,12 @@ Bone::~Bone()
 
 #pragma endregion
 
-void Bone::addChild(Bone* child)
+void SingleBone::addChild(SingleBone* child)
 {
 	children.push_back(child);
 }
 
-void Bone::drawBone(mat4 projection, mat4 view, mat4 modelGlobal, GLuint shaderID, EulerCamera cam)
+void SingleBone::drawBone(mat4 projection, mat4 view, mat4 modelGlobal, GLuint shaderID, EulerCamera cam)
 {
 	mat4 modelLocal = modelGlobal * localTransform * rotMatrix;
 
@@ -99,7 +101,7 @@ void Bone::drawBone(mat4 projection, mat4 view, mat4 modelGlobal, GLuint shaderI
 	vec3 Ka = BLUE*0.2; // ambient reflectance
 	float specular_exponent = 100.0f; //specular exponent - size of the specular elements
 
-	drawObject(shaderID, view, projection, modelLocal, light, Ls, La, Ld, Ks, Kd, Ka, specular_exponent, cam, mesh, coneAngle, coneDirection, GL_TRIANGLES);
+	drawObject(shaderID, view, projection, modelLocal, light, Ls, La, Ld, Ks, Kd, Ka, specular_exponent, cam, singleMesh, coneAngle, coneDirection, GL_TRIANGLES);
 	
 	
 	for (GLuint i = 0; i < this->children.size(); i++)
@@ -110,7 +112,7 @@ void Bone::drawBone(mat4 projection, mat4 view, mat4 modelGlobal, GLuint shaderI
 
 #pragma region ROTATION
 
-void Bone::bendBone(GLfloat rotation)
+void SingleBone::bendBone(GLfloat rotation)
 {
 	versor quat = quat_from_axis_rad(rotation, this->right.v[0], this->right.v[1], this->right.v[2]);
 	orientation = orientation * quat;
@@ -120,7 +122,7 @@ void Bone::bendBone(GLfloat rotation)
 	this->up = this->rotMatrix * vec4(0.0f, 1.0f, 0.0f, 0.0f);
 }
 
-void Bone::rollBone(GLfloat rotation)
+void SingleBone::rollBone(GLfloat rotation)
 {
 	versor quat = quat_from_axis_rad(rotation, this->forward.v[0], this->forward.v[1], this->forward.v[2]);
 	orientation = orientation * quat;
@@ -130,7 +132,7 @@ void Bone::rollBone(GLfloat rotation)
 	this->up = this->rotMatrix * vec4(0.0f, 1.0f, 0.0f, 0.0f);
 }
 
-void Bone::pivotBone(GLfloat rotation)
+void SingleBone::pivotBone(GLfloat rotation)
 {
 	versor quat = quat_from_axis_rad(rotation, this->up.v[0], this->up.v[1], this->up.v[2]);
 	orientation = orientation * quat;
@@ -140,7 +142,7 @@ void Bone::pivotBone(GLfloat rotation)
 	this->up = this->rotMatrix * vec4(0.0f, 1.0f, 0.0f, 0.0f);
 }
 
-void Bone::updateJoint(vec3 point, Bone* endEffector)
+void SingleBone::updateJoint(vec3 point, SingleBone* endEffector)
 {
 	vec3 bonePosition = getPosition();
 	vec3 currDirection = endEffector->getPosition() - bonePosition;
@@ -161,7 +163,7 @@ void Bone::updateJoint(vec3 point, Bone* endEffector)
 
 #pragma endregion
 
-mat4 Bone::getTransformMatrix()
+mat4 SingleBone::getTransformMatrix()
 {
 	mat4 global = identity_mat4();
 	if (parent)
@@ -170,7 +172,7 @@ mat4 Bone::getTransformMatrix()
 
 }
 
-vec3 Bone::getPosition()
+vec3 SingleBone::getPosition()
 {
 	mat4 global = identity_mat4();
 	if (parent)
@@ -186,7 +188,7 @@ vec3 Bone::getPosition()
 class Hand {
 public:
 	Hand();
-	Hand(Mesh mPalm, Mesh mFinger, Bone* root);
+	Hand(SingleMesh mPalm, SingleMesh mFinger, SingleBone* root);
 	void drawHand(mat4 view, mat4 projection, GLuint shaderID, EulerCamera cam);
 	void drawHand(mat4 view, mat4 projection, mat4 modelGlobal, GLuint shaderID, EulerCamera cam);
 	void formFist();
@@ -194,86 +196,86 @@ public:
 	void oneFinger();
 	void oneJoint();
 
-	Bone* list[15];
+	SingleBone* list[15];
 
-	Bone* index[3];
-	Bone* middle[3];
-	Bone* ring[3];
-	Bone* pinky[3];
-	Bone* thumb[3];
+	SingleBone* index[3];
+	SingleBone* middle[3];
+	SingleBone* ring[3];
+	SingleBone* pinky[3];
+	SingleBone* thumb[3];
 
-	Bone* palm;
+	SingleBone* palm;
 	float radians = 0;
 };
 
 Hand::Hand(){}
 
-Hand::Hand(Mesh mPalm, Mesh mFinger, Bone* root)
+Hand::Hand(SingleMesh mPalm, SingleMesh mFinger, SingleBone* root)
 {
-	palm = new Bone(mPalm, root, identity_mat4());
+	palm = new SingleBone(mPalm, root, identity_mat4());
 
 	//Finger 1
 	mat4 matrix = rotate_z_deg(identity_mat4(), -15);
 	matrix = translate(matrix, vec3(2.0*cos(ONE_DEG_IN_RAD * -15), 2.0*sin(ONE_DEG_IN_RAD * -15), 0.0));
-	list[0] = new Bone(mFinger, palm, matrix);
+	list[0] = new SingleBone(mFinger, palm, matrix);
 	thumb[0] = list[0];
 	for (int i = 1; i < 3; i++)
 	{
 		matrix = scale(identity_mat4(), vec3(0.9, 0.9, 0.9));
 		matrix = translate(matrix, vec3(1.5, 0.0, 0.0));
-		list[i] = new Bone(mFinger, list[i-1], matrix);
+		list[i] = new SingleBone(mFinger, list[i-1], matrix);
 		thumb[i] = list[i];
 	}
 
 	//Finger 2
 	matrix = rotate_z_deg(identity_mat4(), 45);
 	matrix = translate(matrix, vec3(2.0*cos(ONE_DEG_IN_RAD*45), 2.0*sin(ONE_DEG_IN_RAD*45), 0.0));
-	list[3] = new Bone(mFinger, palm, matrix);
+	list[3] = new SingleBone(mFinger, palm, matrix);
 	index[0] = list[3];
 	for (int i = 4; i < 6; i++)
 	{
 		matrix = scale(identity_mat4(), vec3(0.9, 0.9, 0.9));
 		matrix = translate(matrix, vec3(1.5, 0.0, 0.0));
-		list[i] = new Bone(mFinger, list[i - 1], matrix);
+		list[i] = new SingleBone(mFinger, list[i - 1], matrix);
 		index[i - 3] = list[i];
 	}
 
 	//Finger 3
 	matrix = rotate_z_deg(identity_mat4(), 75);
 	matrix = translate(matrix, vec3(2.0*cos(ONE_DEG_IN_RAD * 75), 2.0*sin(ONE_DEG_IN_RAD * 75), 0.0));
-	list[6] = new Bone(mFinger, palm, matrix);
+	list[6] = new SingleBone(mFinger, palm, matrix);
 	middle[0] = list[6];
 	for (int i = 7; i < 9; i++)
 	{
 		matrix = scale(identity_mat4(), vec3(0.9, 0.9, 0.9));
 		matrix = translate(matrix, vec3(1.5, 0.0, 0.0));
-		list[i] = new Bone(mFinger, list[i - 1], matrix);
+		list[i] = new SingleBone(mFinger, list[i - 1], matrix);
 		middle[i - 6] = list[i];
 	}
 
 	//Finger 4
 	matrix = rotate_z_deg(identity_mat4(), 115);
 	matrix = translate(matrix, vec3(2.0*cos(ONE_DEG_IN_RAD * 115), 2.0*sin(ONE_DEG_IN_RAD * 115), 0.0));
-	list[9] = new Bone(mFinger, palm, matrix);
+	list[9] = new SingleBone(mFinger, palm, matrix);
 	ring[0] = list[9];
 	for (int i = 10; i < 12; i++)
 	{
 		matrix = scale(identity_mat4(), vec3(0.9, 0.9, 0.9));
 		matrix = translate(matrix, vec3(1.5, 0.0, 0.0));
-		list[i] = new Bone(mFinger, list[i - 1], matrix);
+		list[i] = new SingleBone(mFinger, list[i - 1], matrix);
 		ring[i - 9] = list[i];
 	}
 
 	//Finger 5
 	matrix = rotate_z_deg(identity_mat4(), 140);
 	matrix = translate(matrix, vec3(2.0*cos(ONE_DEG_IN_RAD * 140), 2.0*sin(ONE_DEG_IN_RAD * 140), 0.0));
-	list[12] = new Bone(mFinger, palm, matrix);
+	list[12] = new SingleBone(mFinger, palm, matrix);
 	pinky[0] = list[12];
 	for (int i = 13; i < 15; i++)
 	{
 		matrix = scale(identity_mat4(), vec3(0.9, 0.9, 0.9));
 		matrix = translate(matrix, vec3(1.5, 0.0, 0.0));
-		list[i] = new Bone(mFinger, list[i - 1], matrix);
+		list[i] = new SingleBone(mFinger, list[i - 1], matrix);
 		pinky[i - 12] = list[i];
 	}
 }
@@ -416,27 +418,27 @@ class Arm {
 
 public:
 	Arm();
-	Arm(Mesh mArm, Mesh mJoint, Mesh mPalm, Mesh mFinger, Bone* root);
+	Arm(SingleMesh mArm, SingleMesh mJoint, SingleMesh mPalm, SingleMesh mFinger, SingleBone* root);
 	void drawArm(mat4 view, mat4 projection, mat4 modelGlobal, GLuint shaderID, EulerCamera cam);
 
-	Bone* shoulderXY;
-	Bone* shoulderXZ;
-	Bone* upper;
-	Bone* elbow;
-	Bone* lower;
+	SingleBone* shoulderXY;
+	SingleBone* shoulderXZ;
+	SingleBone* upper;
+	SingleBone* elbow;
+	SingleBone* lower;
 	Hand hand;
 
 };
 
 Arm::Arm() {};
 
-Arm::Arm(Mesh mArm, Mesh mJoint, Mesh mPalm, Mesh mFinger, Bone* root)
+Arm::Arm(SingleMesh mArm, SingleMesh mJoint, SingleMesh mPalm, SingleMesh mFinger, SingleBone* root)
 {
-	shoulderXY = new Bone(mJoint, root, identity_mat4());
-	shoulderXZ = new Bone(mJoint, shoulderXY, identity_mat4());
-	upper = new Bone(mArm, shoulderXZ, identity_mat4());
-	elbow = new Bone(mJoint, upper, identity_mat4());
-	lower = new Bone(mArm, elbow, identity_mat4());
+	shoulderXY = new SingleBone(mJoint, root, identity_mat4());
+	shoulderXZ = new SingleBone(mJoint, shoulderXY, identity_mat4());
+	upper = new SingleBone(mArm, shoulderXZ, identity_mat4());
+	elbow = new SingleBone(mJoint, upper, identity_mat4());
+	lower = new SingleBone(mArm, elbow, identity_mat4());
 	hand = Hand(mPalm, mFinger, lower);
 	hand.palm->localTransform = scale(hand.palm->localTransform, vec3(0.8, 0.8, 0.8));
 	hand.palm->localTransform = translate(hand.palm->localTransform, vec3(0.0, -3.0, 0.0));
@@ -457,7 +459,7 @@ class Torso {
 
 public:
 	Torso();
-	Torso(Mesh mTorso, Mesh mArm, Mesh mJoint, Mesh mPalm, Mesh mFinger);
+	Torso(SingleMesh mTorso, SingleMesh mArm, SingleMesh mJoint, SingleMesh mPalm, SingleMesh mFinger);
 	//~Torso();
 	void drawTorso(mat4 view, mat4 projection, mat4 modelGlobal, GLuint shaderID, EulerCamera cam);
 	void moveAnalytical(vec3 point);
@@ -467,20 +469,20 @@ public:
 	bool isUnstable(vec3 point);
 
 //private:
-	Bone* torso;
+	SingleBone* torso;
 	Arm left;
 	float theta1 = 0, theta2 = 0, theta3 = 0;
 	float l1, l2, l12, l22;
 
-	Bone* endEffector;
+	SingleBone* endEffector;
 	vec3 originalPosition;
 };
 
 Torso::Torso() {};
 
-Torso::Torso(Mesh mTorso, Mesh mArm, Mesh mJoint, Mesh mPalm, Mesh mFinger)
+Torso::Torso(SingleMesh mTorso, SingleMesh mArm, SingleMesh mJoint, SingleMesh mPalm, SingleMesh mFinger)
 {
-	torso = new Bone(mTorso, nullptr, identity_mat4(), true);
+	torso = new SingleBone(mTorso, nullptr, identity_mat4(), true);
 	left = Arm(mArm, mJoint, mPalm, mFinger, torso);
 	left.shoulderXY->localTransform = translate(left.upper->localTransform, vec3(-2.5, 2.0, 0.0));
 	left.upper->rollBone(ONE_DEG_IN_RAD * -90);

@@ -18,6 +18,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/ext.hpp>
 /*----------------------------------------------------------------------------
 								DEFINITIONS
 ----------------------------------------------------------------------------*/
@@ -27,7 +29,7 @@ void drawCubeMap(GLuint shaderID, GLuint textureID, mat4 view, mat4 proj, mat4 m
 void drawLine(GLuint shaderID, mat4 model, mat4 proj, vec3 origin, vec3 destination, vec3 colour);
 void drawTriangle(GLuint shaderID, mat4 model, mat4 proj, vec3 v1, vec3 v2, vec3 v3, vec3 colour);
 void drawPoint(GLuint shaderID, mat4 model, mat4 proj, vec3 point, vec3 colour);
-void drawModel(GLuint shaderID, mat4 view, mat4 model, mat4 proj, Model meshes, EulerCamera cam);
+void drawModel(GLuint shaderID, mat4 view, mat4 model, mat4 proj, Model meshes, EulerCamera cam, float t);
 
 /*----------------------------------------------------------------------------
 								IMPLEMENTATIONS
@@ -271,7 +273,7 @@ void drawModel(GLuint shaderID, mat4 view, mat4 model, mat4 proj, Model meshes, 
 	meshes.Draw(shaderID);
 }
 
-void drawModel(GLuint shaderID, mat4 view, mat4 mod, mat4 proj, modelLoader loader, EulerCamera cam, model _model)
+void drawModel(GLuint shaderID, mat4 view, mat4 mod, mat4 proj, modelLoader loader, EulerCamera cam, model _model, float t)
 {
 	glUseProgram(shaderID);
 
@@ -313,15 +315,29 @@ void drawModel(GLuint shaderID, mat4 view, mat4 mod, mat4 proj, modelLoader load
 
 	vector<Matrix_4f> boneTransforms = vector<Matrix_4f>();
 	float antime = 0;
-	loader.boneTransform(0.03, boneTransforms, 0, antime);
+	loader.boneTransform(t, boneTransforms, 0, antime);
 
 	for (int i = 0; i < boneTransforms.size(); i++)
 	{
 		string name = "BoneTransforms[" + to_string(i) + "]";
 		//cout << glGetUniformLocation(shaderID, name.c_str()) << endl;
 		//cout << glGetUniformLocation(shaderID, "BoneTransforms") << endl;
-		glUniformMatrix4fv(5, boneTransforms.size(), GL_FALSE, (const GLfloat*)&boneTransforms);
+
+		glm::mat4 rootTransform(
+			boneTransforms[i].m[0][0], boneTransforms[i].m[0][1], boneTransforms[i].m[0][2], boneTransforms[i].m[0][3],
+			boneTransforms[i].m[1][0], boneTransforms[i].m[1][1], boneTransforms[i].m[1][2], boneTransforms[i].m[1][3],
+			boneTransforms[i].m[2][0], boneTransforms[i].m[2][1], boneTransforms[i].m[2][2], boneTransforms[i].m[2][3],
+			boneTransforms[i].m[3][0], boneTransforms[i].m[3][1], boneTransforms[i].m[3][2], boneTransforms[i].m[3][3]);
+		//cout << glm::to_string(rootTransform) << endl;
+		//print(rootTransform);
+		glUniformMatrix4fv(glGetUniformLocation(shaderID, name.c_str()), 1, GL_TRUE, glm::value_ptr(rootTransform));
 	}
 
 	loader.renderModel(_model);
+}
+
+void SetTransforms(GLuint shaderID, const Matrix_4f& transform, int i)
+{
+	string name = "BoneTransforms[" + to_string(i) + "]";
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, name.c_str()), 1, GL_TRUE, (const GLfloat*)&transform);
 }

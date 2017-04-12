@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <iostream>
-#include "Utilities.h"
+#include "Skeleton.h"
 
 
 using namespace std;
@@ -11,7 +11,7 @@ const float width = 900, height = 900;
 ----------------------------------------------------------------------------*/
 
 SingleMesh cubeMapID, cubeID, palmID;
-//Mesh boneID, torsoID;
+SingleMesh boneID, torsoID;
 //Mesh testID;
 
 /*----------------------------------------------------------------------------
@@ -43,7 +43,6 @@ bool mode = false;
 SingleMesh bear;
 modelLoader loader;
 model m;
-
 vec3 point = vec3(6.0, 5.0, 0.0);
 float xaxis = 0, yaxis = 0, zaxis = 0;
 float a = 0, b = 0, t = 0;
@@ -84,7 +83,7 @@ void init()
 
 void display() 
 {
-	mat4 proj = perspective(87.0, (float)width / (float)(height), 1, 1000.0);
+	mat4 proj = perspective(90.0, (float)width / (float)(height), 1, 10000.0);
 	mat4 view = look_at(cam.getPosition(), cam.getPosition() + cam.getFront(), cam.getUp());
 	glViewport(0, 0, width, height);
 	drawloop(view, proj, 0);
@@ -123,25 +122,7 @@ void updateScene() {
 		//update_text(textID, output.c_str());
 		if (!pause)
 		{
-			t += 0.01f;
-			a += 1.0f;
-			b += 1.0f;
-			if (t > 1)
-			{
-				t = 0;
-				backwards = !backwards;
-				currCurve++;
-				if (currCurve >= NUM_CURVES)
-					currCurve = 0;
-			}
-			if (a > 360)
-				a = 0;
-			if (b > 360)
-				b = 0;
-			point.v[0] = 5 * sin(a * ONE_DEG_IN_RAD);
-			point.v[1] = 5 * cos(a * ONE_DEG_IN_RAD) + 10 * sin(b * ONE_DEG_IN_RAD);
-			point.v[2] = 5 * cos(b * ONE_DEG_IN_RAD);
-			//ourModel.updateMesh();
+			t += 0.03f;
 		}
 	}
 	
@@ -349,9 +330,10 @@ void drawloop(mat4 view, mat4 proj, GLuint framebuffer)
 
 
 
-	drawModel(ganfaulShaderID, view, scale(identity_mat4(), vec3(0.01, 0.01, 0.01)), proj, loader, cam, m);
-
-	//drawObject(textureShaderID, view, proj, model, light, Ls, La, Ld, Ks, BLUE, Ka, specular_exponent, cam, bear, coneAngle, coneDirection, GL_TRIANGLES);
+	drawModel(ganfaulShaderID, view, rotate_z_deg(rotate_x_deg(identity_mat4(), 90), 180), proj, loader, cam, m, t);
+	model = translate(model, vec3(3, 0, 0));
+	model = rotate_y_deg(model, 90*cos(t));
+	drawObject(textureShaderID, view, proj, model, light, Ls, La, Ld, Ks, BLUE, Ka, specular_exponent, cam, bear, coneAngle, coneDirection, GL_TRIANGLES);
 	
 	drawCubeMap(cubeMapShaderID, cubeMapID.tex, view, proj, model, vec3(1.0, 1.0, 1.0), vec3(1.0, 1.0, 1.0), cam, cubeMapID, GL_TRIANGLES);
 }

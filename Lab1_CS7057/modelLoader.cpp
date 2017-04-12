@@ -564,23 +564,13 @@ void modelLoader::boneTransform(float secs, vector<Matrix_4f>& transforms, int a
 	Matrix_4f ident;
 	ident.InitIdentity();
 	float tps = (float) (theScene->mAnimations[0]->mTicksPerSecond != 0 ? theScene->mAnimations[0]->mTicksPerSecond : 25.0f);//ticks per second
-	float tit = secs * tps; //time in ticks (haha, tit)
+	float tit = secs * tps; //time in ticks
 
-	//fmod gets the remainer from a/b e.g. fmod(5, 2.2) = 0.6
-	float animTime;
-	if(anim==1)
-		animTime = fmod(tit, 2.66666666667); //duration of first anim	
-	else if (anim==2) 
-		animTime = fmod(tit, 7.03333333333) + 3.2; //duration of 2nd anim + start time of 2nd anim	
-	else 
-		animTime = fmod(tit, 6.0) + 10.9333333333; //duration of 3rd anim + start time of 3rd anim
+	float animTime = fmod(tit, theScene->mAnimations[anim]->mDuration);
+	
+
 
 	antime = animTime;
-	//float test = fmod(tit, 0.23333333334) + 0.76666666666;
-	//float test2 = fmod(tit, 0.23333333334) + 2.1;
-
-	//0.76, 0.98
-	//2.10, 2.32
 
 	readNodeHierarchy(animTime, theScene->mRootNode, ident);
 	transforms.resize(numBones);
