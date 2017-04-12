@@ -5,22 +5,25 @@
 #include <GL/glew.h>
 #include "Antons_maths_funcs.h"
 #include <GL/freeglut.h>
-#include "text.h"
 #include <string>
+#include "modelLoader.h"
 
 #include "Defines.h"
-#include "Loader.h"
+#include "Model.h"
 #include "EulerCamera.h"
 #include "SingleMeshLoader.h"
 #include "Framebuffer.h"
 #include "Shader.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 /*----------------------------------------------------------------------------
 								DEFINITIONS
 ----------------------------------------------------------------------------*/
 
-void drawObject(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 light, vec3 Ls, vec3 La, vec3 Ld, vec3 Ks, vec3 Ka, vec3 Kd, float exp, EulerCamera cam, Mesh mesh, float coneAngle, vec3 coneDirection, GLenum mode);
-void drawCubeMap(GLuint shaderID, GLuint textureID, mat4 view, mat4 proj, mat4 model, vec3 Ld, vec3 La, EulerCamera cam, Mesh skybox, GLenum mode);
+void drawObject(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 light, vec3 Ls, vec3 La, vec3 Ld, vec3 Ks, vec3 Ka, vec3 Kd, float exp, EulerCamera cam, SingleMesh mesh, float coneAngle, vec3 coneDirection, GLenum mode);
+void drawCubeMap(GLuint shaderID, GLuint textureID, mat4 view, mat4 proj, mat4 model, vec3 Ld, vec3 La, EulerCamera cam, SingleMesh skybox, GLenum mode);
 void drawLine(GLuint shaderID, mat4 model, mat4 proj, vec3 origin, vec3 destination, vec3 colour);
 void drawTriangle(GLuint shaderID, mat4 model, mat4 proj, vec3 v1, vec3 v2, vec3 v3, vec3 colour);
 void drawPoint(GLuint shaderID, mat4 model, mat4 proj, vec3 point, vec3 colour);
@@ -30,53 +33,50 @@ void drawModel(GLuint shaderID, mat4 view, mat4 model, mat4 proj, Model meshes, 
 								IMPLEMENTATIONS
 ----------------------------------------------------------------------------*/
 
-void drawObject(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 light, vec3 Ls, vec3 La, vec3 Ld, vec3 Ks, vec3 Ka, vec3 Kd, float exp, EulerCamera cam, Mesh mesh, float coneAngle, vec3 coneDirection, GLenum mode)
+void drawObject(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 light, vec3 Ls, vec3 La, vec3 Ld, vec3 Ks, vec3 Ka, vec3 Kd, float exp, EulerCamera cam, SingleMesh mesh, float coneAngle, vec3 coneDirection, GLenum mode)
 {
 
-	//for (int i = 0; i < 6; i++)
-	//{
-		glUseProgram(shaderID);
-		glBindVertexArray(mesh.VAO[0]);
-		glUniform3fv(glGetUniformLocation(shaderID, "Ls"), 1, Ls.v);
-		glUniform3fv(glGetUniformLocation(shaderID, "Ld"), 1, Ld.v);
-		glUniform3fv(glGetUniformLocation(shaderID, "La"), 1, La.v);
-		glUniform3fv(glGetUniformLocation(shaderID, "Ks"), 1, Ks.v);
-		glUniform3fv(glGetUniformLocation(shaderID, "Kd"), 1, Kd.v);
-		glUniform3fv(glGetUniformLocation(shaderID, "Ka"), 1, Ka.v);
-		glUniform1f(glGetUniformLocation(shaderID, "specular_exponent"), exp);
-		glUniform3fv(glGetUniformLocation(shaderID, "light"), 1, light.v);
-		glUniform4fv(glGetUniformLocation(shaderID, "camPos"), 1, cam.getPosition().v);
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, view.m);
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "proj"), 1, GL_FALSE, proj.m);
-		glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, model.m);
+	glUseProgram(shaderID);
+	glBindVertexArray(mesh.VAO[0]);
+	glUniform3fv(glGetUniformLocation(shaderID, "Ls"), 1, Ls.v);
+	glUniform3fv(glGetUniformLocation(shaderID, "Ld"), 1, Ld.v);
+	glUniform3fv(glGetUniformLocation(shaderID, "La"), 1, La.v);
+	glUniform3fv(glGetUniformLocation(shaderID, "Ks"), 1, Ks.v);
+	glUniform3fv(glGetUniformLocation(shaderID, "Kd"), 1, Kd.v);
+	glUniform3fv(glGetUniformLocation(shaderID, "Ka"), 1, Ka.v);
+	glUniform1f(glGetUniformLocation(shaderID, "specular_exponent"), exp);
+	glUniform3fv(glGetUniformLocation(shaderID, "light"), 1, light.v);
+	glUniform4fv(glGetUniformLocation(shaderID, "camPos"), 1, cam.getPosition().v);
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "proj"), 1, GL_FALSE, proj.m);
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, model.m);
 
-		if (coneAngle != NULL)
-		{
-			glUniform3fv(glGetUniformLocation(shaderID, "coneDirection"), 1, coneDirection.v);
-			glUniform1f(glGetUniformLocation(shaderID, "coneAngle"), coneAngle);
-		}
+	if (coneAngle != NULL)
+	{
+		glUniform3fv(glGetUniformLocation(shaderID, "coneDirection"), 1, coneDirection.v);
+		glUniform1f(glGetUniformLocation(shaderID, "coneAngle"), coneAngle);
+	}
 
-		if (mesh.tex)
-		{
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, mesh.tex);
-			cout << glGetUniformLocation(shaderID, "texture_primary") << endl;
-			glUniform1i(glGetUniformLocation(shaderID, "texture_primary"), 0);
+	if (mesh.tex)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, mesh.tex);
+		glUniform1i(glGetUniformLocation(shaderID, "texture_primary"), 0);
 
-		}
-		if (mesh.norm)
-		{
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, mesh.norm);
-			glUniform1i(glGetUniformLocation(shaderID, "normal_map"), 1);
+	}
+	if (mesh.norm)
+	{
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, mesh.norm);
+		glUniform1i(glGetUniformLocation(shaderID, "normal_map"), 1);
 
-		}
+	}
 
-		glDrawArrays(mode, 0, mesh.mesh_vertex_count);
-	//}
+	glDrawArrays(mode, 0, mesh.mesh_vertex_count);
+
 }
 
-void drawObjectDebug(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 light, vec3 Ls, vec3 La, vec3 Ld, vec3 Ks, vec3 Ka, vec3 Kd, float exp, EulerCamera cam, Mesh mesh, float coneAngle, vec3 coneDirection, GLenum mode)
+void drawObjectDebug(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 light, vec3 Ls, vec3 La, vec3 Ld, vec3 Ks, vec3 Ka, vec3 Kd, float exp, EulerCamera cam, SingleMesh mesh, float coneAngle, vec3 coneDirection, GLenum mode)
 {
 
 	//for (int i = 0; i < 6; i++)
@@ -138,7 +138,7 @@ void drawObjectDebug(GLuint shaderID, mat4 view, mat4 proj, mat4 model, vec3 lig
 	//}
 }
 
-void drawCubeMap(GLuint shaderID, GLuint textureID, mat4 view, mat4 proj, mat4 model, vec3 Ld, vec3 La, EulerCamera cam, Mesh skybox, GLenum mode)
+void drawCubeMap(GLuint shaderID, GLuint textureID, mat4 view, mat4 proj, mat4 model, vec3 Ld, vec3 La, EulerCamera cam, SingleMesh skybox, GLenum mode)
 {
 	glDepthMask(GL_FALSE);
 	glUseProgram(shaderID);
@@ -248,28 +248,20 @@ void drawModel(GLuint shaderID, mat4 view, mat4 model, mat4 proj, Model meshes, 
 	float specular_exponent = 100.0f; //specular exponent - size of the specular elements
 
 	GLuint temp = glGetUniformLocation(shaderID, "Ls");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, Ls.v);
 	temp = glGetUniformLocation(shaderID, "Ld");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, Ld.v);
 	temp = glGetUniformLocation(shaderID, "La");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, La.v);
 	temp = glGetUniformLocation(shaderID, "Ks");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, Ks.v);
 	temp = glGetUniformLocation(shaderID, "Kd");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, Kd.v);
 	temp = glGetUniformLocation(shaderID, "Ka");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, Ka.v);
 	temp = glGetUniformLocation(shaderID, "specular_exponent");
-	//cout << temp << endl;
 	glUniform1f(temp, specular_exponent);
 	temp = glGetUniformLocation(shaderID, "light");
-	//cout << temp << endl;
 	glUniform3fv(temp, 1, light.v);
 	glUniform4fv(glGetUniformLocation(shaderID, "camPos"), 1, cam.getPosition().v);
 	glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, view.m);
@@ -277,4 +269,59 @@ void drawModel(GLuint shaderID, mat4 view, mat4 model, mat4 proj, Model meshes, 
 	glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, model.m);
 
 	meshes.Draw(shaderID);
+}
+
+void drawModel(GLuint shaderID, mat4 view, mat4 mod, mat4 proj, modelLoader loader, EulerCamera cam, model _model)
+{
+	glUseProgram(shaderID);
+
+	vec3 Ls = vec3(0.6f, 0.3f, 0.6f);	//Specular Reflected Light
+	vec3 Ld = vec3(0.8f, 0.8f, 0.8f);	//Diffuse Surface Reflectance
+	vec3 La = vec3(0.8f, 0.8f, 0.8f);	//Ambient Reflected Light
+	vec3 light = vec3(1.8*cos(0.0f), 1.8*sin(0.0f) + 1.0f, -5.0f);//light source location
+	vec3 coneDirection = light + vec3(0.0f, -1.0f, 0.0f);
+	float coneAngle = 40.0f;
+	// object colour
+	vec3 Ks = vec3(0.01f, 0.01f, 0.01f); // specular reflectance
+	vec3 Kd = PURPLE;
+	vec3 Ka = BLUE*0.2; // ambient reflectance
+	float specular_exponent = 100.0f; //specular exponent - size of the specular elements
+
+	GLuint temp = glGetUniformLocation(shaderID, "Ls");
+	glUniform3fv(temp, 1, Ls.v);
+	temp = glGetUniformLocation(shaderID, "Ld");
+	glUniform3fv(temp, 1, Ld.v);
+	temp = glGetUniformLocation(shaderID, "La");
+	glUniform3fv(temp, 1, La.v);
+	temp = glGetUniformLocation(shaderID, "Ks");
+	glUniform3fv(temp, 1, Ks.v);
+	temp = glGetUniformLocation(shaderID, "Kd");
+	glUniform3fv(temp, 1, Kd.v);
+	temp = glGetUniformLocation(shaderID, "Ka");
+	glUniform3fv(temp, 1, Ka.v);
+	temp = glGetUniformLocation(shaderID, "specular_exponent");
+	glUniform1f(temp, specular_exponent);
+	temp = glGetUniformLocation(shaderID, "light");
+	glUniform3fv(temp, 1, light.v);
+	glUniform4fv(glGetUniformLocation(shaderID, "camPos"), 1, cam.getPosition().v);
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, view.m);
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "proj"), 1, GL_FALSE, proj.m);
+	glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, mod.m);
+	//cout << glGetUniformLocation(shaderID, "model") << endl;
+	//cout << glGetUniformLocation(shaderID, "proj") << endl;
+	//cout << glGetUniformLocation(shaderID, "view") << endl << endl;
+
+	vector<Matrix_4f> boneTransforms = vector<Matrix_4f>();
+	float antime = 0;
+	loader.boneTransform(0.03, boneTransforms, 0, antime);
+
+	for (int i = 0; i < boneTransforms.size(); i++)
+	{
+		string name = "BoneTransforms[" + to_string(i) + "]";
+		//cout << glGetUniformLocation(shaderID, name.c_str()) << endl;
+		//cout << glGetUniformLocation(shaderID, "BoneTransforms") << endl;
+		glUniformMatrix4fv(5, boneTransforms.size(), GL_FALSE, (const GLfloat*)&boneTransforms);
+	}
+
+	loader.renderModel(_model);
 }

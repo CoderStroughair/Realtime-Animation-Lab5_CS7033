@@ -11,9 +11,9 @@
 
 using namespace std;
 
-Mesh::Mesh() {}
+SingleMesh::SingleMesh() {}
 
-void Mesh::init(const char* mesh_file, const char* tex_file = NULL, const char* normal_file = NULL) {
+void SingleMesh::init(const char* mesh_file, const char* tex_file = NULL, const char* normal_file = NULL) {
 
 	if (!load_mesh(mesh_file))
 		exit(1);
@@ -21,18 +21,18 @@ void Mesh::init(const char* mesh_file, const char* tex_file = NULL, const char* 
 	if (tex_file != NULL)
 	{
 		load_texture(tex_file, &tex);
-		glUniform1i(tex, 0);
+		//glUniform1i(tex, 0);
 	}
 
 	if (normal_file != NULL)
 	{
 		load_texture(normal_file, &norm);
-		glUniform1i(norm, 1);
+		//glUniform1i(norm, 1);
 	}
 
 }
 
-void Mesh::initCubeMap(GLfloat vertices[], int num_vertices, string texture)
+void SingleMesh::initCubeMap(GLfloat vertices[], int num_vertices, string texture)
 {
 	VAO[0] = NULL;
 	GLuint VBO;
@@ -76,7 +76,7 @@ void Mesh::initCubeMap(GLfloat vertices[], int num_vertices, string texture)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
-void Mesh::loadCubeFace(GLuint textureID, GLenum side, const char* filename)
+void SingleMesh::loadCubeFace(GLuint textureID, GLenum side, const char* filename)
 {
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 	int w;
@@ -99,7 +99,7 @@ void Mesh::loadCubeFace(GLuint textureID, GLenum side, const char* filename)
 	glTexImage2D(side, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 }
 
-bool Mesh::load_mesh(const char* file_name)
+bool SingleMesh::load_mesh(const char* file_name)
 {
 	string name = file_name;
 	const aiScene* scene = aiImportFile(file_name, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
@@ -256,7 +256,7 @@ bool Mesh::load_mesh(const char* file_name)
 	return true;
 }
 
-bool Mesh::update_mesh(mat4 orientation, vec3 position)
+bool SingleMesh::update_mesh(mat4 orientation, vec3 position)
 {
 	for (int i = 0; i < mesh_vertex_count; i++)
 	{
@@ -294,7 +294,7 @@ bool Mesh::update_mesh(mat4 orientation, vec3 position)
 	return true;
 }
 
-bool Mesh::scale_mesh(GLfloat scale)
+bool SingleMesh::scale_mesh(GLfloat scale)
 {
 	for (int i = 0; i < mesh_vertex_count; i++)
 	{
@@ -333,7 +333,7 @@ bool Mesh::scale_mesh(GLfloat scale)
 	return true;
 }
 
-bool Mesh::load_texture(const char* file_name, GLuint* tex)
+bool SingleMesh::load_texture(const char* file_name, GLuint* tex)
 {
 	int x, y, n;
 	int force_channels = 4;

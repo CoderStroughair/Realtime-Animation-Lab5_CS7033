@@ -17,6 +17,7 @@
 #include <stdio.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <assimp/scene.h>
 
 // const used to convert degrees into radians
 #define TAU 2.0 * M_PI
@@ -56,6 +57,7 @@ mat4 identity_mat4 ();
 float determinant (const mat4& mm);
 mat4 inverse (const mat4& mm);
 mat4 transpose (const mat4& mm);
+mat4 convertMatrix(aiMatrix4x4 mm);
 // affine functions
 mat4 translate (const mat4& m, const vec3& v);
 mat4 rotate_x_deg (const mat4& m, float deg);
@@ -643,6 +645,26 @@ inline mat4 transpose (const mat4& mm) {
 		mm.m[3], mm.m[7], mm.m[11], mm.m[15]
 	);
 }
+
+inline mat4 convertMatrix(aiMatrix4x4 mm)
+{
+	/* stored like this:
+	0 4 8  12
+	1 5 9  13
+	2 6 10 14
+	3 7 11 15*/
+
+	mat4 m = mat4
+	(
+		mm.a1, mm.a2, mm.a3, mm.a4,
+		mm.b1, mm.b2, mm.b3, mm.b4,
+		mm.c1, mm.c2, mm.c3, mm.c4,
+		mm.d1, mm.d2, mm.d3, mm.d4
+	);
+
+	return transpose(m);
+}
+
 /*--------------------------AFFINE MATRIX FUNCTIONS---------------------------*/
 // translate a 4d matrix with xyz array
 inline mat4 translate (const mat4& m, const vec3& v) {

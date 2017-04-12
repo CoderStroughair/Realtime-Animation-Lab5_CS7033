@@ -12,7 +12,7 @@ class ParticleSystem;
 class Particle{
 	vec3 initialPosition;
 public:
-	Mesh mesh;
+	SingleMesh mesh;
 
 	vec3 position;
 	vec3 velocity; 
@@ -22,7 +22,7 @@ public:
 	vec3 colour;
 	float scale;
 
-	Particle(Mesh& me, vec3 p, int m) {
+	Particle(SingleMesh& me, vec3 p, int m) {
 		scale = rand() % 10 / 10.0f;
 		health = 100;
 		force = vec3(0.0, 0.0, 0.0);
@@ -79,7 +79,7 @@ public:
 	float mass;					//m									
 	mat4 ibody;					//									
 	mat4 ibodyInv;				//
-	Mesh mesh;
+	SingleMesh mesh;
 
 	vec3 position;				//x(t), ie, the center of mass
 	mat4 orientationMat;		//R(t)
@@ -107,7 +107,7 @@ public:
 	//															|	 0		 0		 0		0	|
 	
 	RigidBody() {};
-	RigidBody(vec3 x, vec3 P, vec3 L, float m, float h, float d, float w, Mesh _mesh) 
+	RigidBody(vec3 x, vec3 P, vec3 L, float m, float h, float d, float w, SingleMesh _mesh) 
 	{
 		initialposition = x;
 
@@ -261,7 +261,7 @@ public:
 	Drag d;
 	Gravity g;
 
-	void init(int p, Mesh& m)
+	void init(int p, SingleMesh& m)
 	{
 		numParticles = p;
 		numForces = 0;

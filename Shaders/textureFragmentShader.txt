@@ -47,5 +47,5 @@ void main()
     
 	vec3 color = Is + Id + Ia;
     frag_color = vec4(color, 1.0);
-	frag_color *= texture(texture_primary, texture_coordinates);
+	frag_color = texture(texture_primary, texture_coordinates);
 }

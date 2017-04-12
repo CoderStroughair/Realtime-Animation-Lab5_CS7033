@@ -1,15 +1,18 @@
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\vc140.pdb
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\vc140.idb
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\eulercamera.obj
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\singlemeshloader.obj
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\main.obj
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\text.obj
-u:\animation labs\realtime-animation-lab5_cs7033\debug\lab5.ilk
-u:\animation labs\realtime-animation-lab5_cs7033\debug\lab5.exe
-u:\animation labs\realtime-animation-lab5_cs7033\debug\lab5.pdb
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\cl.command.1.tlog
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\cl.read.1.tlog
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\cl.write.1.tlog
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\link.command.1.tlog
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\link.read.1.tlog
-u:\animation labs\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\link.write.1.tlog
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\vc140.pdb
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\vc140.idb
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\eulercamera.obj
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\main.obj
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\singlemeshloader.obj
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\text.obj
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\modelloader.obj
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\matrix4x4.obj
+b:\animation\realtime-animation-lab5_cs7033\debug\lab5.ilk
+b:\animation\realtime-animation-lab5_cs7033\debug\lab5.exe
+b:\animation\realtime-animation-lab5_cs7033\debug\lab5.pdb
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\main.obj.enc
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\cl.command.1.tlog
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\cl.read.1.tlog
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\cl.write.1.tlog
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\link.command.1.tlog
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\link.read.1.tlog
+b:\animation\realtime-animation-lab5_cs7033\lab1_cs7057\debug\lab5.tlog\link.write.1.tlog

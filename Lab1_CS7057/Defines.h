@@ -47,6 +47,8 @@
 #define NANO_VERT		"../Shaders/nanosuit.vert"
 #define NANO_FRAG		"../Shaders/nanosuit.frag"
 
+#define SKINNED_VERT	"../Shaders/skinnedVertexShader.txt"
+
 /*----------------------------------------------------------------------------
 				MESH AND TEXTURE VARIABLES
 ----------------------------------------------------------------------------*/
@@ -66,8 +68,8 @@
 #define PALM_MESH		"../Meshes/palm.obj"
 #define TORSO_MESH		"../Meshes/torso.obj"
 #define BONE_MESH		"../Meshes/bone.obj"
-#define NANOSUIT_MESH	"../Meshes/bear.obj"
-//#define NANOSUIT_MESH	"../Meshes/nanosuit/nanosuit.obj"
+#define NANOSUIT_MESH	"../Meshes/nanosuit/nanosuit.obj"
+#define GANFAUL_MESH	"../Meshes/ganfaul/ganfaulanim.dae"
 
 #define BEAR_TEXTURE	"../Textures/bear.tga"
 #define BEAR_TEXTURE2	"../Textures/bear2.tga"

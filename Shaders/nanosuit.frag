@@ -11,6 +11,6 @@ void main()
 {    
 	vec4 diffuse = texture(texture_diffuse1, TexCoords);
 	vec4 specular = texture(texture_specular1, TexCoords);
-	color = diffuse+specular;
-    color = texture(texture_diffuse1, TexCoords);
+	//color = diffuse+specular;
+    color = mix(diffuse, specular, 0.5);;
 }

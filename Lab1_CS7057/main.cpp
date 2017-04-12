@@ -3,7 +3,6 @@
 #include "Utilities.h"
 
 
-
 using namespace std;
 
 const float width = 900, height = 900;
@@ -11,7 +10,7 @@ const float width = 900, height = 900;
 						MESH AND TEXTURE VARIABLES
 ----------------------------------------------------------------------------*/
 
-Mesh cubeMapID, cubeID, palmID;
+SingleMesh cubeMapID, cubeID, palmID;
 //Mesh boneID, torsoID;
 //Mesh testID;
 
@@ -27,7 +26,7 @@ EulerCamera cam(startingPos, 270.0f, 0.0f, 0.0f);
 /*----------------------------------------------------------------------------
 								SHADER VARIABLES
 ----------------------------------------------------------------------------*/
-GLuint simpleShaderID, noTextureShaderID, cubeMapShaderID, textureShaderID, nanosuitShaderID;
+GLuint simpleShaderID, noTextureShaderID, cubeMapShaderID, textureShaderID, nanosuitShaderID, ganfaulShaderID;
 Shader shaderFactory;
 /*----------------------------------------------------------------------------
 							OTHER VARIABLES
@@ -41,8 +40,9 @@ int textID = -1;
 bool pause = false;
 bool mode = false;
 
-Model ourModel;
-Mesh bear;
+SingleMesh bear;
+modelLoader loader;
+model m;
 
 vec3 point = vec3(6.0, 5.0, 0.0);
 float xaxis = 0, yaxis = 0, zaxis = 0;
@@ -61,18 +61,21 @@ void drawloop(mat4 view, mat4 proj, GLuint framebuffer);
 
 void init()
 {
-	if (!init_text_rendering(atlas_image, atlas_meta, width, height)) 
-	{
-		fprintf(stderr, "error init text rendering\n");
-		exit(1);
-	}
+	//if (!init_text_rendering(atlas_image, atlas_meta, width, height)) 
+	//{
+	//	fprintf(stderr, "error init text rendering\n");
+	//	exit(1);
+	//}
 	simpleShaderID = shaderFactory.CompileShader(SIMPLE_VERT, SIMPLE_FRAG);
 	noTextureShaderID = shaderFactory.CompileShader(NOTEXTURE_VERT, NOTEXTURE_FRAG);
 	cubeMapShaderID = shaderFactory.CompileShader(SKY_VERT, SKY_FRAG);
 	textureShaderID = shaderFactory.CompileShader(TEXTURE_VERT, TEXTURE_FRAG);
 	nanosuitShaderID = shaderFactory.CompileShader(NANO_VERT, NANO_FRAG);
+	ganfaulShaderID = shaderFactory.CompileShader(SKINNED_VERT, TEXTURE_FRAG);
 
-	ourModel = Model(NANOSUIT_MESH);
+	//ourModel = Model(GANFAUL_MESH);
+	m = loader.loadModel(GANFAUL_MESH);
+	//m->
 	//Mesh test;
 	//test.init(NANOSUIT_MESH, NULL, NULL);
 	bear.init(BEAR_MESH, BEAR_TEXTURE, NULL);
@@ -86,7 +89,7 @@ void display()
 	glViewport(0, 0, width, height);
 	drawloop(view, proj, 0);
 
-	draw_texts();
+	//draw_texts();
 	glutSwapBuffers();
 }
 
@@ -117,7 +120,7 @@ void updateScene() {
 		output += "Yaw: " + to_string(cam.yaw) + "\n";
 		output += "Roll: " + to_string(cam.roll) + "\n";
 
-		update_text(textID, output.c_str());
+		//update_text(textID, output.c_str());
 		if (!pause)
 		{
 			t += 0.01f;
@@ -138,6 +141,7 @@ void updateScene() {
 			point.v[0] = 5 * sin(a * ONE_DEG_IN_RAD);
 			point.v[1] = 5 * cos(a * ONE_DEG_IN_RAD) + 10 * sin(b * ONE_DEG_IN_RAD);
 			point.v[2] = 5 * cos(b * ONE_DEG_IN_RAD);
+			//ourModel.updateMesh();
 		}
 	}
 	
@@ -314,8 +318,8 @@ int main(int argc, char** argv) {
 	}
 
 	init();
-	textID = add_text("hi",
-		-0.95, 0.9, fontSize, 1.0f, 1.0f, 1.0f, 1.0f);
+	//textID = add_text("hi",
+	//	-0.95, 0.9, fontSize, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	glutMainLoop();
 	return 0;
@@ -327,7 +331,7 @@ void drawloop(mat4 view, mat4 proj, GLuint framebuffer)
 	glEnable(GL_DEPTH_TEST);								// enable depth-testing
 	glDepthFunc(GL_LESS);									// depth-testing interprets a smaller value as "closer"
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Clear the color and buffer bits to make a clean slate
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);					//Create a background	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);					//Create a background	
 
 	mat4 model = identity_mat4();
 
@@ -343,16 +347,11 @@ void drawloop(mat4 view, mat4 proj, GLuint framebuffer)
 	vec3 Ka = BLUE*0.2; // ambient reflectance
 	float specular_exponent = 100.0f; //specular exponent - size of the specular elements
 
-	drawModel(nanosuitShaderID, view, model, proj, ourModel, cam);
 
-	drawObject(textureShaderID, view, proj, model, light, Ls, La, Ld, Ks, BLUE, Ka, specular_exponent, cam, bear, coneAngle, coneDirection, GL_TRIANGLES);
+
+	drawModel(ganfaulShaderID, view, scale(identity_mat4(), vec3(0.01, 0.01, 0.01)), proj, loader, cam, m);
+
+	//drawObject(textureShaderID, view, proj, model, light, Ls, La, Ld, Ks, BLUE, Ka, specular_exponent, cam, bear, coneAngle, coneDirection, GL_TRIANGLES);
 	
 	drawCubeMap(cubeMapShaderID, cubeMapID.tex, view, proj, model, vec3(1.0, 1.0, 1.0), vec3(1.0, 1.0, 1.0), cam, cubeMapID, GL_TRIANGLES);
-	//skeleton.drawTorso(view, proj, identity_mat4(), noTextureShaderID, cam);
-	//model = translate(identity_mat4(), vec3(point.v[0], point.v[1], point.v[2]));
-	//drawObject(noTextureShaderID, view, proj, model, light, Ls, La, Ld, Ks, Kd, Ka, specular_exponent, cam, cubeID, coneAngle, coneDirection, GL_TRIANGLES);
-
-	//model = translate(identity_mat4(), skeleton.left.hand.palm->getPosition());
-	//drawObject(noTextureShaderID, view, proj, model, light, Ls, La, Ld, Ks, BLUE, Ka, specular_exponent, cam, cubeID, coneAngle, coneDirection, GL_TRIANGLES);
-
 }
